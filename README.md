@@ -1,10 +1,10 @@
 ## `mCube`: Multinomial multi-state micro-level reserving model
-==============================================================================================
+=========================================================================
 
 This repository contains the code for an application on simulated data of the model presented in the article: mCube: Multinomial Micro-level reserving Model.
 
 ## Abstract of the article 
-==============================================================================================
+==========================================================================
 This paper presents a multinomial multi-state micro-level reserving
 model, denoted mCube. We propose a unified framework for mod-
 elling the time and the payment process for IBNR and RBNS claims
@@ -16,16 +16,16 @@ ily injury claims. In our application the proposed model produces a
 best estimate distribution that is centered around the true reserve.
 
 ## Starting point:  
-==============================================================================================
+============================================================================
 - R version: 3.6 or later.
 
 ## How to proceed: 
-==============================================================================================
+=============================================================================
 
 Each folder contains an implementation of  an individual claims reserving model on simulated data and can be executed after downloading the required libairies. 
 
 ## References
-==============================================================================================
+=============================================================================
 
 * Menvouta, E. J., Ponnet, J., Van Oirbeek, R., and Verdonck, T. (2022). Mcube:
 Multinomial multi-state micro-level reserving model. arXiv
