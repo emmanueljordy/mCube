@@ -5,6 +5,8 @@ This repository contains the code for an application on simulated data of the mo
 
 ## Abstract of the article 
 ==========================================================================
+
+
 This paper presents a multinomial multi-state micro-level reserving
 model, denoted mCube. We propose a unified framework for mod-
 elling the time and the payment process for IBNR and RBNS claims
