@@ -334,33 +334,18 @@ simsTestDT <- simPathsJolien2(copy(finTimeMods), copy(finPayMods), copy(trainDT)
 ### Extract Observed reserves                                        ###
 ########################################################################
 #extracting BE and observed reserve
-predSimCalibDT <- simsCalibDT$predSim
-nSimCalibDT <- simsCalibDT$nSim
+
 
 predSimTestDT <- simsTestDT$predSim
 nSimTestDT <- simsTestDT$nSim
 
-predSimIBNR <- simsIBNR$predSim
-nSimIBNR <- simsIBNR$nSim
 
 
-transDataCalibRes <- transPrep(output_micro_calib, nTrans,whichTrans='P',verbose=TRUE)
+
 transDataTestRes <- transPrep(output_micro_test, nTrans,whichTrans='P',verbose=TRUE)
-
-
-
-
-
-
 currentYear <- 2016
 inflRates <- c(0,0,0)
 
-
-
-obsResCheckCalibDT <- extractObsResJordy(predSimCalibDT, transDataCalibRes, inflRates, raw2 = FALSE, totalCost = FALSE,testSimsDT = calibDT2)
-obsResVecCalibDT <- unlist(obsResCheckCalibDT$obsRes)
-length(obsResVecCalibDT)
-sum(obsResVecCalibDT)
 
 polNumbs94 <- output_micro[year(accDate)==1994,polNumb]
 transDataTestRes2 <- copy(llply(transDataTestRes, function(xx) xx[ year(bookDate)>2005,]))
@@ -375,72 +360,29 @@ sum(obsResTestDT$delt0Pay)
 
 
 
-
-ObsresTestDF <- ldply(copy(obsResCheckTestDT[["obsRes"]]), data.table)
-
-
-ObsresTestDF <- ObsresTestDF[order(ObsresTestDF $.id),]
-ObsresTestDF[is.na(ObsresTestDF)] <- 0
-
-View(ObsresTestDF[which(ObsresTestDF$outComeT != obsResTestDT$delt0Pay),])
-
-
 ########################################################################
 ### Extract Best estimates                                           ###
 ########################################################################
 
-BECalibDT <- inflCorrBE(predSimCalibDT, inflRates, currentYear)
-sum(unlist(lapply(BECalibDT,median)))/length((unlist(lapply(BECalibDT,median))))
-sum(unlist(lapply(BECalibDT,mean)))/length((unlist(lapply(BECalibDT,mean))))
+
 
 BETestDT <- inflCorrBE(predSimTestDT, inflRates, currentYear)
 sum(unlist(lapply(BETestDT,median)))/length((unlist(lapply(BETestDT,median))))
 sum(unlist(lapply(BETestDT,mean)))/length((unlist(lapply(BETestDT,mean))))
 
-BEIBNRDT <- inflCorrBE(predSimIBNR, inflRates, currentYear)
-
-sum(unlist(lapply(BETestDT,mean))) + sum(unlist(lapply(BEIBNRDT,mean)))
-########################################################################
-###                     RBNS reserves                                ###
-########################################################################
-resTestTry <- QuantifQuantileMean(unlist(lapply(BECalibDT,mean)), obsResVecCalibDT, x = unlist(lapply(BETestDT,mean)), alpha = seq(.01, .99,.01), testN = 200)
-sampsQRTry <- resTestTry$fitted.values
-testMeanPredTry <- sampsQRTry[1, ]
-totResTry <- sum(testMeanPredTry)
-totResTry
-
-BETestDT = BETestDT[order(names(BETestDT))]
-savePath = 'C:/Users/u0134144/Documents/Phd_Allianz/Micro_reserving/code/MicroPrepJordy/summariseOBSBEquantile1221Mn.RData'
-resMix <- extractFinCalibTestDTNoMix(BECalibDT,obsResVecCalibDT,BETestDT,obsResTestDT$delt0Pay,savePath)
-
-
-library(e1071)
-round(c(summary(obsResTestDT$delt0Pay)[c(1,3,4,6)],IQR(obsResTestDT$delt0Pay),skewness(obsResTestDT$delt0Pay),kurtosis(obsResTestDT$delt0Pay)),2)
-round(c(summary(unlist(lapply(BETestDT,mean)))[c(1,3,4,6)],IQR(unlist(lapply(BETestDT,mean))),skewness(unlist(lapply(BETestDT,mean))),kurtosis(unlist(lapply(BETestDT,mean)))),2)
-round(c(summary(testMeanPredTry )[c(1,3,4,6)],IQR(testMeanPredTry ),skewness(testMeanPredTry ),kurtosis(testMeanPredTry )),2)
-
 
 ########################################################################
-### IBNR reserves                                     ###
+###                     reserves                                ###
 ########################################################################
-resTestTryIBNR <- QuantifQuantileMean(unlist(lapply(BECalibDT,mean)), obsResVecCalibDT, x = unlist(lapply(BEIBNRDT,mean)), alpha = seq(.01, .99,.01), testN = 200)
-sampsQRTryIBNR <- resTestTryIBNR$fitted.values
-testMeanPredTryIBNR <- sampsQRTryIBNR[1, ]
-totResTryIBNR <- sum(testMeanPredTryIBNR)
-totResTryIBNR
+set.seed(9*2020)
+n_samps <- 1000
+RBNS_reserves <- c()
+tot_reserves <- c()
 
-totResTryIBNR + totResTry
-########################################################################
-### IBNR + RBNS reserves bets estimate                               ###
-########################################################################
-calibJordyRBNS <- calibJordy(BECalibDT,obsResVecCalibDT,BETestDT,1000)
-calibJordyIBNR <- calibJordy(BEIBNRDT,obsResVecCalibDT,BETestDT,1000)
-
-hist(unlist(calibJordyRBNS[["totResBoot"]]) + unlist(calibJordyIBNR[["totResBoot"]]) , freq = T,breaks =50, main="Reserve BE",xlab="Amount",xlim=c(6e7,8.5e7),ylim=c(0,50))
-abline(v = sum(microDataBISub_test_check[payInd == 1,]$delt0Pay,na.rm = T), col = 2, lwd = 6)
-abline(v = sum(testMeanPredTry) + sum(testMeanPredTryIBNR), col = 4, lwd = 3,lty=2)
-abline(v = reserves$`CL Res.`[8], col = 6, lwd = 3,lty=2)
-legend("topleft", legend=c("Obs Res", "Mcube Res", "CL Res"),
-       col=c(2,4,6), lty=c(1,2,2), cex=0.8)
+for(i in 1:n_samps){
+  try_RBNS <- lapply(BETestDT, sample, size=1)
+  RBNS_reserves[i] <- sum(unlist(try_RBNS))
+  tot_reserves[i] <- RBNS_reserves[i]
+}
 
 
